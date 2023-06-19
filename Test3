@@ -104,8 +104,8 @@ uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] = { 0 };
 
 /* The rate at which data is sent to the queue.  The 200ms value is converted
 to ticks using the portTICK_PERIOD_MS constant. */
-#define TaskPeriod         ( pdMS_TO_TICKS( 100 ) )
-#define TaskPeriod2         ( pdMS_TO_TICKS( 1000 ) )
+#define TaskPeriod         ( pdMS_TO_TICKS( 50 ) )
+#define TaskPeriod2         ( pdMS_TO_TICKS( 700 ) )
 #define TaskPeriod3         ( pdMS_TO_TICKS( 50 ) )
 
 //-------------------------------------------------------------
@@ -247,7 +247,7 @@ static void changetimer1Task( void *pvParameters )
 
     /* Remove compiler warning about unused parameter. */
     ( void ) pvParameters;
-    
+
     /* Initialize xNextWakeTime - this only needs to be done once. */
     xNextWakeTime = xTaskGetTickCount();
 
@@ -266,8 +266,7 @@ static void changetimer1Task( void *pvParameters )
             }
         }
 
-        Delay1();
-
+        xNextWakeTime = xTaskGetTickCount();
         /* Place this task in the blocked state until it is time to run again. */
         vTaskDelayUntil( &xNextWakeTime, TaskPeriod );
     }
@@ -286,20 +285,16 @@ static void changetimer2Task( void *pvParameters )
     for( ;; )
     {
         P1OUT |= 0x02;
-
+        timer2Unit = 0;
         do
         {
             timer2Unit++;
              Delay(50000);
         }while(timer2Unit <= 9);
 
-        if(timer2Unit == 10)
-        {
-            timer2Unit -= 10;
-        }
-
         P1OUT &= ~0x02;
 
+        xNextWakeTime = xTaskGetTickCount();
         /* Place this task in the blocked state until it is time to run again. */
         vTaskDelayUntil( &xNextWakeTime, TaskPeriod2 );
     }
@@ -561,11 +556,5 @@ void boardInit()
 
 void Delay(volatile long i)
 {
-    for(; i > 0; i--) {}
-}
-
-void Delay1(void)
-{
-    volatile long i = 50000;
     for(; i > 0; i--) {}
 }
